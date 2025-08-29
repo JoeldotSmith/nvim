@@ -1,4 +1,5 @@
 require("config.lazy")
+vim.cmd("highlight! WinSeparator guifg=#4BC3B1")
 vim.schedule(function()
   require("config.lspconfig")
 end)

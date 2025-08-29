@@ -12,3 +12,7 @@ map("n", "<C-u>", "<C-u>zz", { silent = true })
 map("n", "<leader><tab>h", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
 map("n", "<leader><tab>l", "<cmd>tabnext<cr>", { desc = "Next Tab" })
 map("n", "<leader><tab>g", "<cmd>tablast<cr>", { desc = "Last Tab" })
+
+map("n", "<leader><leader>", function()
+  require("snacks.picker").files()
+end, { desc = "Find Files (cwd)" })
