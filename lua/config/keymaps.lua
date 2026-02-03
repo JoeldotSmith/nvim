@@ -5,35 +5,85 @@
 local map = vim.keymap.set
 local Util = require("lazyvim.util")
 
+vim.keymap.set("n", "<leader>z", function()
+  require("no-neck-pain").toggle({})
+end, { silent = true, noremap = true })
+
 vim.keymap.del("n", "<leader><tab>[")
 vim.keymap.del("n", "<leader><tab>]")
 vim.keymap.set("t", "<esc><esc>", "<C-\\><C-n>")
 
-vim.api.nvim_create_user_command("DebugProject", function()
-  require("plugins.csharp").debug_project()
+function CloseTerminals()
+  vim.api.nvim_command("bufdo if (bufname() =~ '^term://.*') | bd! | endif")
+end
+
+vim.api.nvim_create_user_command("KillTerminals", CloseTerminals, { desc = "Close all terminal buffers" })
+
+vim.api.nvim_create_user_command("RunProject", function(opts)
+  local ami = opts.args
+
+  vim.cmd("tabnew")
+
+  vim.cmd("terminal cd $(ls -d */ | grep -iE '^enco.*backend' | grep -ivE 'mini') && dotnet watch")
+  vim.cmd("vsplit")
+
+  if ami == "ami" then
+    vim.cmd("terminal ./msql_connect.sh")
+    vim.cmd("split")
+  end
+
+  vim.cmd("terminal cd $(ls -d */ | grep -iE '^enco.*frontend' | grep -ivE 'mini') && npm run dev")
+end, { nargs = "?" })
+
+vim.api.nvim_create_user_command("AmiMigration", function(opts)
+  local migrationName = opts.args
+  if migrationName == "" then
+    print("Migration name is required")
+    return
+  end
+
+  vim.cmd("vsplit")
+  vim.cmd(
+    "terminal "
+      .. "/usr/local/share/dotnet/dotnet ef migrations add "
+      .. "--project Enco.AMI.RS.Data/Enco.AMI.RS.Data.csproj "
+      .. "--startup-project Enco.AMI.RS.FMG.Backend/Enco.AMI.RS.FMG.Backend.csproj "
+      .. "--context Enco.AMI.RS.Data.AppDbContext "
+      .. "--configuration Debug "
+      .. migrationName
+      .. " --output-dir Migrations"
+  )
+end, { nargs = 1 })
+
+vim.api.nvim_create_user_command("Note", function()
+  local notes_dir = vim.fn.expand("~/Notes")
+  local filename = os.date("%Y-%m-%d") .. ".md"
+  local path = notes_dir .. "/" .. filename
+
+  if vim.fn.isdirectory(notes_dir) == 0 then
+    vim.fn.mkdir(notes_dir, "p")
+  end
+
+  vim.cmd("tablast")
+  vim.cmd("tabnew")
+  vim.cmd("edit " .. vim.fn.fnameescape(path))
 end, {})
 
--- New mappings
---
+local Snacks = require("snacks")
 -- lazysql
 map("n", "<leader>cd", function()
-  Util.terminal.open({ "lazysql" }, {
-    cwd = Util.root.get(),
-    ctrl_hjkl = false,
+  Snacks.terminal.open({ "lazysql" }, {
+    cwd = require("lazyvim.util").root.get(),
     border = "rounded",
-    persistent = false,
     title = "Lazysql",
     title_pos = "center",
   })
 end, { desc = "Lazysql" })
 
--- chronos
 map("n", "<leader>ch", function()
-  Util.terminal.open({ "chronos" }, {
-    cwd = Util.root.get(),
-    ctrl_hjkl = false,
+  Snacks.terminal.open({ "chronos" }, {
+    cwd = require("lazyvim.util").root.get(),
     border = "rounded",
-    persistent = false,
     title = "Chronos",
     title_pos = "center",
   })
