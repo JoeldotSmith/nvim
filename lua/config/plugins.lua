@@ -219,6 +219,148 @@ vim.api.nvim_create_autocmd("UIEnter", {
 setup("mason-lspconfig")
 setup("mason-nvim-dap")
 
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  underline = true,
+})
+
+local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
+  or vim.lsp.diagnostic.on_publish_diagnostics
+
+vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+  local client = vim.lsp.get_client_by_id(ctx.client_id)
+  if client and client.name == "roslyn" and result and result.diagnostics then
+    result.diagnostics = vim.tbl_filter(function(diagnostic)
+      return diagnostic.code ~= "CA1873"
+    end, result.diagnostics)
+  end
+
+  return default_publish_diagnostics(err, result, ctx, config)
+end
+
+local function setup_lsp()
+  local lspconfig = require("lspconfig")
+  local mason_lspconfig = require("mason-lspconfig")
+  local cmp_nvim_lsp = require("cmp_nvim_lsp")
+
+  vim.lsp.config("roslyn", {})
+
+  local capabilities = cmp_nvim_lsp.default_capabilities()
+  local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+
+  for type, icon in pairs(signs) do
+    local hl = "DiagnosticSign" .. type
+    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+  end
+
+  local handlers = {
+    function(server_name)
+      if server_name == "marksman" then
+        return
+      end
+      lspconfig[server_name].setup({
+        capabilities = capabilities,
+      })
+    end,
+    ["emmet_ls"] = function()
+      lspconfig.emmet_ls.setup({
+        capabilities = capabilities,
+        filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
+      })
+    end,
+    ["volar"] = function()
+      lspconfig.volar.setup({
+        capabilities = capabilities,
+        init_options = {
+          vue = {
+            hybridMode = false,
+          },
+        },
+        settings = {
+          typescript = {
+            inlayHints = {
+              enumMemberValues = {
+                enabled = true,
+              },
+              functionLikeReturnTypes = {
+                enabled = true,
+              },
+              propertyDeclarationTypes = {
+                enabled = true,
+              },
+              parameterTypes = {
+                enabled = true,
+                suppressWhenArgumentMatchesName = true,
+              },
+              variableTypes = {
+                enabled = true,
+              },
+            },
+          },
+        },
+      })
+    end,
+    ["ts_ls"] = function()
+      lspconfig.ts_ls.setup({
+        capabilities = capabilities,
+        init_options = {
+          plugins = {
+            {
+              name = "@vue/typescript-plugin",
+              location = vim.fn.stdpath("data")
+                .. "/mason/packages/vue-language-server/node_modules/@vue/language-server",
+              languages = { "vue" },
+            },
+          },
+        },
+        filetypes = {
+          "javascript",
+          "typescript",
+          "vue",
+        },
+        settings = {
+          typescript = {
+            tsserver = {
+              useSyntaxServer = false,
+            },
+            inlayHints = {
+              includeInlayParameterNameHints = "all",
+              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            },
+          },
+        },
+      })
+    end,
+  }
+
+  if mason_lspconfig.setup_handlers then
+    mason_lspconfig.setup_handlers(handlers)
+  else
+    for _, server_name in ipairs(mason_lspconfig.get_installed_servers()) do
+      local handler = handlers[server_name] or handlers[1]
+      handler(server_name)
+    end
+  end
+end
+
+vim.schedule(setup_lsp)
+
+local neotest_ok, neotest = pcall(require, "neotest")
+if neotest_ok then
+  neotest.setup({
+    adapters = {
+      require("neotest-dotnet"),
+    },
+  })
+end
+
 local cmp_ok, cmp = pcall(require, "cmp")
 if cmp_ok then
   cmp.setup({
@@ -278,15 +420,6 @@ if codecompanion_ok then
         end,
       },
     },
-  })
-
-  vim.api.nvim_create_autocmd("FileType", {
-    pattern = "codecompanion",
-    callback = function(args)
-      vim.keymap.set("n", "<C-c>", function()
-        require("codecompanion").toggle_chat()
-      end, { buffer = args.buf, silent = true, desc = "Hide chat" })
-    end,
   })
 
   local progress_ok, progress = pcall(require, "fidget.progress")
