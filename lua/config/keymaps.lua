@@ -3,10 +3,9 @@
 -- Add any additional keymaps here
 
 local map = vim.keymap.set
-local Util = require("lazyvim.util")
 
 vim.keymap.set("n", "<leader>z", function()
-  require("no-neck-pain").toggle({})
+  require("no-neck-pain").toggle()
 end, { silent = true, noremap = true })
 
 vim.keymap.del("n", "<leader><tab>[")
@@ -70,7 +69,7 @@ vim.api.nvim_create_user_command("Note", function()
 end, {})
 
 local Snacks = require("snacks")
--- lazysql
+
 map("n", "<leader>cd", function()
   Snacks.terminal.open({ "lazysql" }, {
     cwd = require("lazyvim.util").root.get(),
@@ -79,6 +78,14 @@ map("n", "<leader>cd", function()
     title_pos = "center",
   })
 end, { desc = "Lazysql" })
+
+map("n", "<leader>co", function()
+  require("codecompanion").toggle_chat()
+end, { desc = "AI Helper" })
+
+map("n", "<leader>cO", function()
+  require("codecompanion").chat()
+end, { desc = "AI Helper (new chat)" })
 
 map("n", "<leader>ch", function()
   Snacks.terminal.open({ "chronos" }, {
