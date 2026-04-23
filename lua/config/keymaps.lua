@@ -221,6 +221,9 @@ map("n", "<leader>gb", function()
 end, { desc = "Git Blame Line" })
 
 -- Terminals and tools
+vim.keymap.set("n", "<leader>qq", "<cmd>confirm qa<cr>", {
+  desc = "Quit All",
+})
 map("t", "<esc><esc>", "<C-\\><C-n>", { desc = "Enter Normal Mode" })
 map({ "n", "t" }, "<C-/>", function()
   floating_terminal(nil, "Terminal")
