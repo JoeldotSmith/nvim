@@ -1,15 +1,22 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
-
 local map = vim.keymap.set
+
+local function root()
+  return vim.fs.root(0, {
+    ".git",
+    "package.json",
+    "pyproject.toml",
+    "slnx",
+    "*.sln",
+    "*.csproj",
+  }) or vim.uv.cwd()
+end
 
 vim.keymap.set("n", "<leader>z", function()
   require("no-neck-pain").toggle()
 end, { silent = true, noremap = true })
 
-vim.keymap.del("n", "<leader><tab>[")
-vim.keymap.del("n", "<leader><tab>]")
+pcall(vim.keymap.del, "n", "<leader><tab>[")
+pcall(vim.keymap.del, "n", "<leader><tab>]")
 vim.keymap.set("t", "<esc><esc>", "<C-\\><C-n>")
 
 function CloseTerminals()
@@ -72,7 +79,7 @@ local Snacks = require("snacks")
 
 map("n", "<leader>cd", function()
   Snacks.terminal.open({ "lazysql" }, {
-    cwd = require("lazyvim.util").root.get(),
+    cwd = root(),
     border = "rounded",
     title = "Lazysql",
     title_pos = "center",
@@ -89,7 +96,7 @@ end, { desc = "AI Helper (new chat)" })
 
 map("n", "<leader>ch", function()
   Snacks.terminal.open({ "chronos" }, {
-    cwd = require("lazyvim.util").root.get(),
+    cwd = root(),
     border = "rounded",
     title = "Chronos",
     title_pos = "center",

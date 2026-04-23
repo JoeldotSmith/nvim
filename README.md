@@ -1,4 +1,15 @@
-# 💤 LazyVim
+# Neovim config
 
-A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
-Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+This config targets Neovim 0.12 and uses the built-in `vim.pack` plugin manager.
+
+Plugin updates:
+
+```vim
+:lua vim.pack.update()
+```
+
+Health check:
+
+```vim
+:checkhealth vim.pack
+```
