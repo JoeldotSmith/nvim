@@ -2,39 +2,33 @@ return {
   "snacks.nvim",
   opts = {
     dashboard = {
+      enabled = true,
       preset = {
-        pick = function(cmd, opts)
-          return LazyVim.pick(cmd, opts)()
-        end,
-        header = [[
-      ████ ██████           █████      ██                     
-     ███████████             █████                             
-     █████████ ███████████████████ ███   ███████████   
-    █████████  ███    █████████████ █████ ██████████████   
-   █████████ ██████████ █████████ █████ █████ ████ █████   
- ███████████ ███    ███ █████████ █████ █████ ████ █████  
-██████  █████████████████████ ████ █████ █████ ████ ██████ 
-  ]],
-        -- stylua: ignore
-        ---@type snacks.dashboard.Item[]
         keys = {
-          { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
-          { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
-          { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
-          { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
-          { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
-          { icon = " ", key = "s", desc = "Restore Session", section = "session" },
-          { icon = " ", key = "x", desc = "Lazy Extras", action = ":LazyExtras" },
-          { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
-          { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+          { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+          { icon = " ", key = "s", desc = "Restore Session", action = ":lua require('persistence').load()" },
+          { icon = " ", key = "u", desc = "Check for Updates", action = ":Pack check" },
+          { icon = " ", key = "q", desc = "Quit", action = ":qa" },
         },
+        header = [[
+ .          .
+ ';;,.        ::'
+ ,:::;,,        :ccc,
+,::c::,,,,.     :cccc,
+,cccc:;;;;;.    cllll,
+,cccc;.;;;;;,   cllll;
+:cccc; .;;;;;;. coooo;
+;llll;   ,:::::'loooo;
+;llll:    ':::::loooo:
+:oooo:     .::::llodd:
+.;ooo:       ;cclooo:.
+.;oc        'coo;.
+ .'         .,.]],
       },
       sections = {
         { section = "header" },
-        { icon = " ", title = "Keymaps", section = "keys", indent = 2, padding = 1 },
-        { icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
-        { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
-        { section = "startup" },
+        { section = "keys", gap = 1, padding = 1 },
       },
     },
   },
