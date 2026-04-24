@@ -1,3 +1,4 @@
-return { "shortcuts/no-neck-pain.nvim", version = "*", opts = {
-  width = 100,
-} }
+return {}
+-- return { "shortcuts/no-neck-pain.nvim", version = "*", opts = {
+--   width = 100,
+-- } }

@@ -4,10 +4,6 @@
 
 local map = vim.keymap.set
 
-vim.keymap.set("n", "<leader>z", function()
-  require("no-neck-pain").toggle()
-end, { silent = true, noremap = true })
-
 vim.keymap.del("n", "<leader><tab>[")
 vim.keymap.del("n", "<leader><tab>]")
 vim.keymap.set("t", "<esc><esc>", "<C-\\><C-n>")
@@ -70,6 +66,12 @@ end, {})
 
 local Snacks = require("snacks")
 
+vim.keymap.set("n", "<leader>z", function()
+  Snacks.zen()
+end, { silent = true, noremap = true })
+vim.keymap.set("n", "<leader>Z", function()
+  Snacks.zen.zoom()
+end, { silent = true, noremap = true })
 map("n", "<leader>cd", function()
   Snacks.terminal.open({ "lazysql" }, {
     cwd = require("lazyvim.util").root.get(),
