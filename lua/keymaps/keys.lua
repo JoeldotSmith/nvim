@@ -43,79 +43,6 @@ local function lazygit(cwd)
 end
 
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-  desc = "Highlight when yanking text",
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-})
-
-vim.api.nvim_create_user_command("VimPackClean", function()
-  local inactive = vim.iter(vim.pack.get()):filter(function(x) return not x.active end):map(function(x) return x.spec.name end):totable()
-  if #inactive > 0 then
-    vim.pack.del(inactive)
-    print("Cleaned: " .. table.concat(inactive, ", "))
-  else
-    print("Nothing to clean.")
-  end
-end, {})
-
-local function close_terminals()
-  vim.api.nvim_command("bufdo if (bufname() =~ '^term://.*') | bd! | endif")
-end
-
-vim.api.nvim_create_user_command("KillTerminals", close_terminals, { desc = "Close all terminal buffers" })
-
-vim.api.nvim_create_user_command("RunProject", function(opts)
-  local ami = opts.args
-
-  vim.cmd("tabnew")
-
-  vim.cmd("terminal cd $(ls -d */ | grep -iE '^enco.*backend' | grep -ivE 'mini') && dotnet watch")
-  vim.cmd("vsplit")
-
-  if ami == "ami" then
-    vim.cmd("terminal ./msql_connect.sh")
-    vim.cmd("split")
-  end
-
-  vim.cmd("terminal cd $(ls -d */ | grep -iE '^enco.*frontend' | grep -ivE 'mini') && npm run dev")
-end, { nargs = "?" })
-
-vim.api.nvim_create_user_command("AmiMigration", function(opts)
-  local migrationName = opts.args
-  if migrationName == "" then
-    print("Migration name is required")
-    return
-  end
-
-  vim.cmd("vsplit")
-  vim.cmd(
-    "terminal "
-      .. "/usr/local/share/dotnet/dotnet ef migrations add "
-      .. "--project Enco.AMI.RS.Data/Enco.AMI.RS.Data.csproj "
-      .. "--startup-project Enco.AMI.RS.FMG.Backend/Enco.AMI.RS.FMG.Backend.csproj "
-      .. "--context Enco.AMI.RS.Data.AppDbContext "
-      .. "--configuration Debug "
-      .. migrationName
-      .. " --output-dir Migrations"
-  )
-end, { nargs = 1 })
-
-vim.api.nvim_create_user_command("Note", function()
-  local notes_dir = vim.fn.expand("~/Notes")
-  local filename = os.date("%Y-%m-%d") .. ".md"
-  local path = notes_dir .. "/" .. filename
-
-  if vim.fn.isdirectory(notes_dir) == 0 then
-    vim.fn.mkdir(notes_dir, "p")
-  end
-
-  vim.cmd("tablast")
-  vim.cmd("tabnew")
-  vim.cmd("edit " .. vim.fn.fnameescape(path))
-end, {})
-
 -- Editing
 map({ "i", "x", "n", "s" }, "<C-s>", "<cmd>write<cr><esc>", { desc = "Save File" })
 map("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear Search" })
@@ -125,12 +52,6 @@ map("n", "n", "nzzzv", { desc = "Next Search Result" })
 map("n", "N", "Nzzzv", { desc = "Previous Search Result" })
 map("v", "<", "<gv", { desc = "Indent Left" })
 map("v", ">", ">gv", { desc = "Indent Right" })
-map("n", "<A-j>", "<cmd>move .+1<cr>==", { desc = "Move Line Down" })
-map("n", "<A-k>", "<cmd>move .-2<cr>==", { desc = "Move Line Up" })
-map("i", "<A-j>", "<esc><cmd>move .+1<cr>==gi", { desc = "Move Line Down" })
-map("i", "<A-k>", "<esc><cmd>move .-2<cr>==gi", { desc = "Move Line Up" })
-map("v", "<A-j>", ":move '>+1<cr>gv=gv", { desc = "Move Selection Down" })
-map("v", "<A-k>", ":move '<-2<cr>gv=gv", { desc = "Move Selection Up" })
 
 -- Windows
 map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window" })
@@ -143,8 +64,8 @@ map("n", "<leader>wj", "<C-w>j", { desc = "Go to Lower Window" })
 map("n", "<leader>wk", "<C-w>k", { desc = "Go to Upper Window" })
 map("n", "<leader>wl", "<C-w>l", { desc = "Go to Right Window" })
 map("n", "<leader>wd", "<C-w>c", { desc = "Delete Window" })
-map("n", "<leader>w-", "<C-w>s", { desc = "Split Window Below" })
-map("n", "<leader>w|", "<C-w>v", { desc = "Split Window Right" })
+map("n", "<leader>ws", "<C-w>s", { desc = "Split Window Below" })
+map("n", "<leader>|", "<C-w>v", { desc = "Split Window Right" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Equalize Windows" })
 
 -- Tabs

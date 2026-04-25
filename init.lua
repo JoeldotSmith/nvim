@@ -61,5 +61,7 @@ vim.g.loaded_tohtml = 1
 vim.g.loaded_tutor_mode_plugin = 1
 vim.g.loaded_zipPlugin = 1
 
-require("config.plugins")
-require("config.keymaps")
+require("plugins.add")
+require("plugins.setup")
+require("keymaps.commands")
+require("keymaps.keys")
