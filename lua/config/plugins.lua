@@ -23,7 +23,6 @@ vim.pack.add({
 
   repo("EdenEast/nightfox.nvim"),
   repo("folke/snacks.nvim"),
-  repo("shortcuts/no-neck-pain.nvim"),
   repo("sphamba/smear-cursor.nvim"),
   repo("folke/which-key.nvim"),
   repo("j-hui/fidget.nvim"),
@@ -46,7 +45,6 @@ vim.pack.add({
   repo("mfussenegger/nvim-lint"),
   repo("williamboman/mason.nvim"),
   repo("williamboman/mason-lspconfig.nvim"),
-  repo("jay-babu/mason-nvim-dap.nvim"),
   repo("neovim/nvim-lspconfig"),
   repo("seblyng/roslyn.nvim"),
 
@@ -58,18 +56,9 @@ vim.pack.add({
   repo("rafamadriz/friendly-snippets"),
   repo("supermaven-inc/supermaven-nvim"),
 
-  repo("mfussenegger/nvim-dap"),
-  repo("rcarriga/nvim-dap-ui"),
-  repo("theHamsta/nvim-dap-virtual-text"),
-  repo("nvim-neotest/neotest"),
-  repo("Issafalcon/neotest-dotnet"),
-  repo("antoinemadec/FixCursorHold.nvim"),
-  repo("ramboe/ramboe-dotnet-utils"),
 
   repo("olimorris/codecompanion.nvim"),
   repo("MeanderingProgrammer/render-markdown.nvim"),
-  repo("obsidian-nvim/obsidian.nvim"),
-  repo("OXY2DEV/markview.nvim"),
   repo("lervag/vimtex"),
 }, {
   confirm = #vim.api.nvim_list_uis() > 0,
@@ -105,14 +94,18 @@ setup("persistence")
 setup("lazydev")
 setup("nvim-ts-autotag")
 setup("ts_context_commentstring")
-setup("no-neck-pain", { width = 100 })
 setup("smear_cursor")
 setup("supermaven-nvim")
 setup("render-markdown")
-setup("markview")
-setup("nvim-dap-virtual-text")
 
 setup("snacks", {
+  zen = {
+    win = {
+      backdrop = {
+        transparent = false,
+      },
+    },
+  },
   dashboard = {
     enabled = true,
     preset = {
@@ -145,18 +138,6 @@ setup("snacks", {
   },
 })
 
-local notes_dir = vim.fn.expand("~/Notes")
-if vim.fn.isdirectory(notes_dir) == 1 then
-  setup("obsidian", {
-    legacy_commands = false,
-    workspaces = {
-      {
-        name = "main",
-        path = notes_dir,
-      },
-    },
-  })
-end
 
 setup("nvim-treesitter.configs", {
   ensure_installed = {
@@ -219,7 +200,6 @@ vim.api.nvim_create_autocmd("UIEnter", {
 setup("mason-lspconfig", {
   automatic_enable = false,
 })
-setup("mason-nvim-dap")
 
 vim.diagnostic.config({
   virtual_text = true,
@@ -262,11 +242,6 @@ local function setup_lsp()
     },
     vue_ls = {
       capabilities = capabilities,
-      init_options = {
-        vue = {
-          hybridMode = false,
-        },
-      },
       settings = {
         typescript = {
           inlayHints = {
@@ -337,16 +312,8 @@ local function setup_lsp()
   end
 end
 
-vim.schedule(setup_lsp)
+setup_lsp()
 
-local neotest_ok, neotest = pcall(require, "neotest")
-if neotest_ok then
-  neotest.setup({
-    adapters = {
-      require("neotest-dotnet"),
-    },
-  })
-end
 
 local cmp_ok, cmp = pcall(require, "cmp")
 if cmp_ok then
@@ -381,7 +348,7 @@ if codecompanion_ok then
       chat = {
         adapter = "codex",
       },
-      inline = {
+      inlkne = {
         adapter = "codex",
       },
     },

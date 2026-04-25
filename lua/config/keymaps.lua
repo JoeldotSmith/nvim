@@ -42,6 +42,24 @@ local function lazygit(cwd)
   Snacks.lazygit({ cwd = cwd or root() })
 end
 
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  desc = "Highlight when yanking text",
+  callback = function()
+    vim.highlight.on_yank()
+  end,
+})
+
+vim.api.nvim_create_user_command("VimPackClean", function()
+  local inactive = vim.iter(vim.pack.get()):filter(function(x) return not x.active end):map(function(x) return x.spec.name end):totable()
+  if #inactive > 0 then
+    vim.pack.del(inactive)
+    print("Cleaned: " .. table.concat(inactive, ", "))
+  else
+    print("Nothing to clean.")
+  end
+end, {})
+
 local function close_terminals()
   vim.api.nvim_command("bufdo if (bufname() =~ '^term://.*') | bd! | endif")
 end
@@ -241,8 +259,8 @@ map("n", "<leader>ch", function()
   floating_terminal({ "chronos" }, "Chronos")
 end, { desc = "Chronos" })
 map("n", "<leader>z", function()
-  require("no-neck-pain").toggle()
-end, { desc = "Toggle No Neck Pain" })
+  require("snacks").zen()
+end, { desc = "Toggle Zen" })
 
 -- CodeCompanion
 map("n", "<leader>co", function()
@@ -281,40 +299,26 @@ map("n", "[w", function()
   vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.WARN, float = true })
 end, { desc = "Previous Warning" })
 
--- Debugging and tests
-map("n", "<F5>", function()
-  require("dap").continue()
-end, { desc = "Debug Continue" })
-map("n", "<F6>", function()
-  require("neotest").run.run({ strategy = "dap" })
-end, { desc = "Debug Nearest Test" })
-map("n", "<F8>", function()
-  require("dap").step_out()
-end, { desc = "Debug Step Out" })
-map("n", "<F9>", function()
-  require("dap").toggle_breakpoint()
-end, { desc = "Toggle Breakpoint" })
-map("n", "<F10>", function()
-  require("dap").step_over()
-end, { desc = "Debug Step Over" })
-map("n", "<F11>", function()
-  require("dap").step_into()
-end, { desc = "Debug Step Into" })
-map("n", "<leader>dr", function()
-  require("dap").repl.open()
-end, { desc = "Debug REPL" })
-map("n", "<leader>dl", function()
-  require("dap").run_last()
-end, { desc = "Debug Last" })
-map("n", "<leader>dt", function()
-  require("neotest").run.run({ strategy = "dap" })
-end, { desc = "Debug Nearest Test" })
-map("n", "<leader>tn", function()
-  require("neotest").run.run()
-end, { desc = "Run Nearest Test" })
-map("n", "<leader>tf", function()
-  require("neotest").run.run(vim.fn.expand("%"))
-end, { desc = "Run Test File" })
-map("n", "<leader>ts", function()
-  require("neotest").summary.toggle()
-end, { desc = "Toggle Test Summary" })
+-- LSP
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if not client then
+      return
+    end
+
+    local lspmap = function(lhs, rhs, desc)
+      vim.keymap.set("n", lhs, rhs, { buffer = args.buf, silent = true, desc = desc })
+    end
+
+    lspmap("gd", vim.lsp.buf.definition, "Goto Definition")
+    lspmap("gD", vim.lsp.buf.declaration, "Goto Declaration")
+    lspmap("gr", vim.lsp.buf.references, "References")
+    lspmap("gI", vim.lsp.buf.implementation, "Goto Implementation")
+    lspmap("gy", vim.lsp.buf.type_definition, "Goto Type Definition")
+    lspmap("K", vim.lsp.buf.hover, "Hover")
+    lspmap("<leader>cr", vim.lsp.buf.rename, "Rename")
+    lspmap("<leader>ca", vim.lsp.buf.code_action, "Code Action")
+  end,
+})
+
