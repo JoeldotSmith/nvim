@@ -1,10 +1,3 @@
-vim.api.nvim_create_autocmd("TextYankPost", {
-  desc = "Highlight when yanking text",
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-})
-
 vim.api.nvim_create_user_command("VimPackClean", function()
   local inactive = vim.iter(vim.pack.get()):filter(function(x) return not x.active end):map(function(x) return x.spec.name end):totable()
   if #inactive > 0 then
