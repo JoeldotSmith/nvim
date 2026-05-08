@@ -81,11 +81,11 @@ map("n", "<leader>cd", function()
   })
 end, { desc = "Lazysql" })
 
-map("n", "<leader>co", function()
+map("n", "<leader>aa", function()
   require("codecompanion").toggle_chat()
 end, { desc = "AI Helper" })
 
-map("n", "<leader>cO", function()
+map("n", "<leader>aA", function()
   require("codecompanion").chat()
 end, { desc = "AI Helper (new chat)" })
 
