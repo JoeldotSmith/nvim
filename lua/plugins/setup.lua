@@ -89,6 +89,21 @@ setup("nvim-treesitter.configs", {
   indent = { enable = true },
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("user_treesitter_start", { clear = true }),
+  callback = function(ev)
+    local ft = ev.match
+    local ok_lang, lang = pcall(vim.treesitter.language.get_lang, ft)
+    if not ok_lang or not lang then
+      return
+    end
+
+    if vim.treesitter.language.add(lang) then
+      pcall(vim.treesitter.start, ev.buf, lang)
+    end
+  end,
+})
+
 setup("mason", {
   registries = {
     "github:mason-org/mason-registry",
@@ -150,10 +165,19 @@ end
 local function setup_lsp()
   local mason_lspconfig = require("mason-lspconfig")
   local cmp_nvim_lsp = require("cmp_nvim_lsp")
-
-  vim.lsp.config("roslyn", {})
-
   local capabilities = cmp_nvim_lsp.default_capabilities()
+
+  setup("roslyn", {})
+  vim.lsp.config("roslyn", {
+    capabilities = capabilities,
+    cmd = function(dispatchers, config)
+      return vim.lsp.rpc.start({ "roslyn", "--stdio" }, dispatchers, {
+        cwd = config.cmd_cwd,
+        env = config.cmd_env,
+        detached = config.detached,
+      })
+    end,
+  })
   local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
 
   for type, icon in pairs(signs) do

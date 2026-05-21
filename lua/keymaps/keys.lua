@@ -184,10 +184,10 @@ map("n", "<leader>z", function()
 end, { desc = "Toggle Zen" })
 
 -- CodeCompanion
-map("n", "<leader>co", function()
+map("n", "<leader>aa", function()
   require("codecompanion").toggle_chat()
 end, { desc = "AI Helper" })
-map("n", "<leader>cO", function()
+map("n", "<leader>aA", function()
   require("codecompanion").chat()
 end, { desc = "AI Helper (new chat)" })
 vim.api.nvim_create_autocmd("FileType", {
