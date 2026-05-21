@@ -23,6 +23,94 @@ return {
     },
   },
   {
+    "mfussenegger/nvim-dap",
+    ft = { "cs", "razor" },
+    dependencies = {
+      {
+        "rcarriga/nvim-dap-ui",
+        config = function()
+          require("config.nvim-dap-ui")
+        end,
+      },
+      {
+        "nvim-neotest/neotest",
+        dependencies = {
+          "nvim-neotest/nvim-nio",
+          "Issafalcon/neotest-dotnet",
+        },
+        config = function()
+          require("neotest").setup({
+            adapters = {
+              require("neotest-dotnet"),
+            },
+          })
+        end,
+      },
+    },
+    config = function()
+      require("config.nvim-dap")
+
+      local dap = require("dap")
+
+      local function pick_program()
+        local items = {}
+        local csproj = vim.fn.glob("**/*.csproj")
+
+        for path in csproj:gmatch("[^\n]+") do
+          items[#items + 1] = path
+        end
+
+        if #items == 0 then
+          vim.notify("No .csproj files found", vim.log.levels.ERROR)
+          return nil
+        end
+
+        if #items == 1 then
+          csproj = items[1]
+        else
+          local selection = vim.fn.inputlist(vim.list_extend(
+            { "Select .csproj:" },
+            vim.tbl_map(function(path)
+              return path
+            end, items)
+          ))
+
+          if selection < 1 or selection > #items then
+            return nil
+          end
+
+          csproj = items[selection]
+        end
+
+        if not csproj or csproj == "" then
+          return nil
+        end
+
+        local base = vim.fn.fnamemodify(csproj, ":h")
+        local name = vim.fn.fnamemodify(csproj, ":t:r")
+        return vim.fn.glob(vim.fs.joinpath(base, "bin", "Debug", "*", name .. ".dll"))
+      end
+
+      dap.configurations.cs = {
+        {
+          type = "netcoredbg",
+          name = "launch - netcoredbg",
+          request = "launch",
+          console = "internalConsole",
+          program = pick_program,
+        },
+        {
+          type = "coreclr",
+          name = "attach - netcoredbg",
+          request = "attach",
+          processId = function()
+            return require("dap.utils").pick_process()
+          end,
+        },
+      }
+    end,
+  },
+  {
     "seblyng/roslyn.nvim",
     ---@module 'roslyn.config'
     ---@type RoslynNvimConfig
@@ -30,52 +118,5 @@ return {
     opts = {
       -- your configuration comes here; leave empty for default settings
     },
-  },
-  {
-    -- Debug Framework
-    "mfussenegger/nvim-dap",
-    dependencies = {
-      "rcarriga/nvim-dap-ui",
-    },
-    config = function()
-      require("config.nvim-dap")
-    end,
-    event = "VeryLazy",
-  },
-  { "nvim-neotest/nvim-nio" },
-  {
-    -- UI for debugging
-    "rcarriga/nvim-dap-ui",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-    },
-    config = function()
-      require("config.nvim-dap-ui")
-    end,
-  },
-  {
-    "nvim-neotest/neotest",
-    requires = {
-      {
-        "Issafalcon/neotest-dotnet",
-      },
-    },
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-    },
-  },
-  {
-    "Issafalcon/neotest-dotnet",
-    lazy = false,
-    dependencies = {
-      "nvim-neotest/neotest",
-    },
-  },
-  {
-    "ramboe/ramboe-dotnet-utils",
-    dependencies = { "mfussenegger/nvim-dap" },
   },
 }
