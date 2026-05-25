@@ -270,21 +270,69 @@ setup_lsp()
 
 local cmp_ok, cmp = pcall(require, "cmp")
 if cmp_ok then
+  local kind_icons = {
+    Text = "󰉿", Method = "󰆧", Function = "󰊕", Constructor = "",
+    Field = "󰜢", Variable = "󰀫", Class = "󰠱", Interface = "",
+    Module = "", Property = "󰜢", Unit = "󱉸", Value = "󰎠",
+    Enum = "", Keyword = "󰌋", Snippet = "", Color = "󰏘",
+    File = "󰈙", Reference = "󰈇", Folder = "󰉋", EnumMember = "",
+    Constant = "󰏿", Struct = "󰙅", Event = "", Operator = "󰆕",
+    TypeParameter = "󰊄",
+  }
+
+  local source_labels = {
+    nvim_lsp    = "[LSP]",
+    supermaven  = "[AI]",
+    buffer      = "[Buf]",
+    path        = "[Path]",
+    luasnip     = "[Snip]",
+  }
+
   cmp.setup({
     completion = { completeopt = "menu,menuone,noinsert" },
     experimental = { ghost_text = true },
+
     snippet = {
       expand = function(args)
         vim.snippet.expand(args.body)
       end,
     },
+
+    window = {
+      completion = cmp.config.window.bordered({
+        winhighlight = "Normal:CmpNormal,FloatBorder:CmpBorder,CursorLine:CmpSel,Search:None",
+        scrollbar = false,
+        border = "rounded",
+        col_offset = -3,
+        side_padding = 1,
+      }),
+      documentation = cmp.config.window.bordered({
+        winhighlight = "Normal:CmpDocNormal,FloatBorder:CmpDocBorder",
+        border = "rounded",
+      }),
+    },
+
+    formatting = {
+      fields = { "kind", "abbr", "menu" },
+      format = function(entry, item)
+        local icon = kind_icons[item.kind] or "?"
+        item.kind = " " .. icon .. " "
+        item.menu = (source_labels[entry.source.name] or "")
+        item.abbr = item.abbr:sub(1, 40)  -- truncate long completions
+        return item
+      end,
+    },
+
     mapping = cmp.mapping.preset.insert({
       ["<C-Space>"] = cmp.mapping.complete(),
-      ["<C-e>"] = cmp.mapping.abort(),
-      ["<CR>"] = cmp.mapping.confirm({ select = true }),
-      ["<Tab>"] = cmp.mapping.select_next_item(),
-      ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+      ["<C-e>"]     = cmp.mapping.abort(),
+      ["<CR>"]      = cmp.mapping.confirm({ select = true }),
+      ["<Tab>"]     = cmp.mapping.select_next_item(),
+      ["<S-Tab>"]   = cmp.mapping.select_prev_item(),
+      ["<C-d>"]     = cmp.mapping.scroll_docs(4),
+      ["<C-u>"]     = cmp.mapping.scroll_docs(-4),
     }),
+
     sources = cmp.config.sources({
       { name = "supermaven" },
       { name = "nvim_lsp" },

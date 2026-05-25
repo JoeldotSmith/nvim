@@ -1,13 +1,9 @@
 vim.loader.enable()
-
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
-
 vim.g.snacks_animate = false
 vim.g.vimtex_view_method = "zathura"
-
 local opt = vim.opt
-
 opt.autowrite = true
 opt.breakindent = true
 opt.clipboard = "unnamedplus"
@@ -54,18 +50,35 @@ opt.virtualedit = "block"
 opt.wildmode = "longest:full,full"
 opt.winminwidth = 5
 opt.wrap = false
-
 vim.g.loaded_gzip = 1
 vim.g.loaded_tarPlugin = 1
 vim.g.loaded_tohtml = 1
 vim.g.loaded_tutor_mode_plugin = 1
 vim.g.loaded_zipPlugin = 1
-
 vim.api.nvim_create_autocmd("TextYankPost", {
   callback = function()
     vim.highlight.on_yank()
   end,
 })
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    vim.api.nvim_set_hl(0, "Normal",      { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "NormalNC",    { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "SignColumn",  { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "StatusLine",  { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "TabLine",     { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "TabLineFill", { bg = "NONE" })
+    -- cmp window styling
+    vim.api.nvim_set_hl(0, "CmpNormal",    { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "CmpBorder",    { fg = "#4BC3B1" })
+    vim.api.nvim_set_hl(0, "CmpSel",       { bg = "#2a3f5f", bold = true })
+    vim.api.nvim_set_hl(0, "CmpDocNormal", { bg = "NONE" })
+    vim.api.nvim_set_hl(0, "CmpDocBorder", { fg = "#4BC3B1" })
+  end,
+})
+
 require("plugins.add")
 require("plugins.setup")
 require("keymaps.commands")
