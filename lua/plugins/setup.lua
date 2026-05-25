@@ -32,6 +32,9 @@ setup("supermaven-nvim")
 setup("render-markdown")
 
 setup("snacks", {
+  image = {enabled = true},
+  bigfile = {enabled = true},
+  notifier = {enabled = true},
   dashboard = {
     enabled = true,
     preset = {

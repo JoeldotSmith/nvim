@@ -61,6 +61,11 @@ vim.g.loaded_tohtml = 1
 vim.g.loaded_tutor_mode_plugin = 1
 vim.g.loaded_zipPlugin = 1
 
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank()
+  end,
+})
 require("plugins.add")
 require("plugins.setup")
 require("keymaps.commands")

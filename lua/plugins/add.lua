@@ -19,7 +19,6 @@ vim.pack.add({
   repo("nvim-neotest/nvim-nio"),
   repo("MunifTanjim/nui.nvim"),
   repo("nvim-tree/nvim-web-devicons"),
-  repo("echasnovski/mini.icons"),
 
   repo("EdenEast/nightfox.nvim"),
   repo("folke/snacks.nvim"),
@@ -27,11 +26,9 @@ vim.pack.add({
   repo("folke/which-key.nvim"),
   repo("j-hui/fidget.nvim"),
   repo("lewis6991/gitsigns.nvim"),
-  repo("folke/todo-comments.nvim"),
   repo("folke/flash.nvim"),
   repo("folke/trouble.nvim"),
   repo("folke/noice.nvim"),
-  repo("nvim-lualine/lualine.nvim"),
   repo("akinsho/bufferline.nvim"),
   repo("folke/persistence.nvim"),
   repo("folke/lazydev.nvim"),
@@ -39,7 +36,6 @@ vim.pack.add({
   { src = repo("nvim-treesitter/nvim-treesitter"), version = "main" },
   repo("nvim-treesitter/nvim-treesitter-textobjects"),
   repo("windwp/nvim-ts-autotag"),
-  repo("JoosepAlviste/nvim-ts-context-commentstring"),
 
   repo("stevearc/conform.nvim"),
   repo("mfussenegger/nvim-lint"),
@@ -52,8 +48,6 @@ vim.pack.add({
   repo("hrsh7th/cmp-nvim-lsp"),
   repo("hrsh7th/cmp-buffer"),
   repo("hrsh7th/cmp-path"),
-  repo("garymjr/nvim-snippets"),
-  repo("rafamadriz/friendly-snippets"),
   repo("supermaven-inc/supermaven-nvim"),
 
 
