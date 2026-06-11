@@ -342,69 +342,69 @@ if cmp_ok then
   })
 end
 
-local codecompanion_ok, codecompanion = pcall(require, "codecompanion")
-if codecompanion_ok then
-  codecompanion.setup({
-    strategies = {
-      chat = {
-        adapter = "codex",
-      },
-      inlkne = {
-        adapter = "codex",
-      },
-    },
-    display = {
-      chat = {
-        window = {
-          layout = "vertical",
-          position = "right",
-          width = 75,
-          full_height = true,
-        },
-        start_in_insert_mode = false,
-      },
-    },
-    adapters = {
-      acp = {
-        codex = function()
-          return require("codecompanion.adapters").extend("codex", {
-            defaults = {
-              auth_method = "chatgpt",
-            },
-          })
-        end,
-      },
-    },
-  })
-
-  local progress_ok, progress = pcall(require, "fidget.progress")
-  if progress_ok then
-    local handles = {}
-    local group = vim.api.nvim_create_augroup("CodeCompanionFidget", {})
-
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "CodeCompanionRequestStarted",
-      group = group,
-      callback = function(e)
-        handles[e.data.id] = progress.handle.create({
-          title = "CodeCompanion",
-          message = "Thinking...",
-          lsp_client = { name = e.data.adapter.formatted_name },
-        })
-      end,
-    })
-
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "CodeCompanionRequestFinished",
-      group = group,
-      callback = function(e)
-        local handle = handles[e.data.id]
-        if handle then
-          handle.message = e.data.status == "success" and "Done" or "Failed"
-          handle:finish()
-          handles[e.data.id] = nil
-        end
-      end,
-    })
-  end
-end
+-- local codecompanion_ok, codecompanion = pcall(require, "codecompanion")
+-- if codecompanion_ok then
+--   codecompanion.setup({
+--     strategies = {
+--       chat = {
+--         adapter = "codex",
+--       },
+--       inlkne = {
+--         adapter = "codex",
+--       },
+--     },
+--     display = {
+--       chat = {
+--         window = {
+--           layout = "vertical",
+--           position = "right",
+--           width = 75,
+--           full_height = true,
+--         },
+--         start_in_insert_mode = false,
+--       },
+--     },
+--     adapters = {
+--       acp = {
+--         codex = function()
+--           return require("codecompanion.adapters").extend("codex", {
+--             defaults = {
+--               auth_method = "chatgpt",
+--             },
+--           })
+--         end,
+--       },
+--     },
+--   })
+--
+--   local progress_ok, progress = pcall(require, "fidget.progress")
+--   if progress_ok then
+--     local handles = {}
+--     local group = vim.api.nvim_create_augroup("CodeCompanionFidget", {})
+--
+--     vim.api.nvim_create_autocmd("User", {
+--       pattern = "CodeCompanionRequestStarted",
+--       group = group,
+--       callback = function(e)
+--         handles[e.data.id] = progress.handle.create({
+--           title = "CodeCompanion",
+--           message = "Thinking...",
+--           lsp_client = { name = e.data.adapter.formatted_name },
+--         })
+--       end,
+--     })
+--
+--     vim.api.nvim_create_autocmd("User", {
+--       pattern = "CodeCompanionRequestFinished",
+--       group = group,
+--       callback = function(e)
+--         local handle = handles[e.data.id]
+--         if handle then
+--           handle.message = e.data.status == "success" and "Done" or "Failed"
+--           handle:finish()
+--           handles[e.data.id] = nil
+--         end
+--       end,
+--     })
+--   end
+-- end

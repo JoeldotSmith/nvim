@@ -51,7 +51,7 @@ vim.pack.add({
   repo("supermaven-inc/supermaven-nvim"),
 
 
-  repo("olimorris/codecompanion.nvim"),
+  -- repo("olimorris/codecompanion.nvim"),
   repo("MeanderingProgrammer/render-markdown.nvim"),
   repo("lervag/vimtex"),
 }, {
