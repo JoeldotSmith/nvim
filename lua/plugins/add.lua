@@ -13,12 +13,12 @@ vim.api.nvim_create_autocmd("PackChanged", {
     end
   end,
 })
-
 vim.pack.add({
   repo("nvim-lua/plenary.nvim"),
   repo("nvim-neotest/nvim-nio"),
   repo("MunifTanjim/nui.nvim"),
   repo("nvim-tree/nvim-web-devicons"),
+  repo("shortcuts/no-neck-pain.nvim"),
 
   repo("EdenEast/nightfox.nvim"),
   repo("folke/snacks.nvim"),
@@ -51,7 +51,8 @@ vim.pack.add({
   repo("supermaven-inc/supermaven-nvim"),
 
 
-  -- repo("olimorris/codecompanion.nvim"),
+  repo("olimorris/codecompanion.nvim"),
+  repo("HakonHarnes/img-clip.nvim"),
   repo("MeanderingProgrammer/render-markdown.nvim"),
   repo("lervag/vimtex"),
 }, {

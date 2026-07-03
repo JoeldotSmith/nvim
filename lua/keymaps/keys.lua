@@ -180,24 +180,24 @@ map("n", "<leader>ch", function()
   floating_terminal({ "chronos" }, "Chronos")
 end, { desc = "Chronos" })
 map("n", "<leader>z", function()
-  require("snacks").zen()
+  require("no-neck-pain").toggle()
 end, { desc = "Toggle Zen" })
 
--- -- CodeCompanion
--- map("n", "<leader>aa", function()
---   require("codecompanion").toggle_chat()
--- end, { desc = "AI Helper" })
--- map("n", "<leader>aA", function()
---   require("codecompanion").chat()
--- end, { desc = "AI Helper (new chat)" })
--- vim.api.nvim_create_autocmd("FileType", {
---   pattern = "codecompanion",
---   callback = function(args)
---     map("n", "<C-c>", function()
---       require("codecompanion").toggle_chat()
---     end, { buffer = args.buf, silent = true, desc = "Hide Chat" })
---   end,
--- })
+-- CodeCompanion
+map("n", "<leader>aa", function()
+  require("codecompanion").toggle_chat()
+end, { desc = "AI Helper" })
+map("n", "<leader>aA", function()
+  require("codecompanion").chat()
+end, { desc = "AI Helper (new chat)" })
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "codecompanion",
+  callback = function(args)
+    map("n", "<C-c>", function()
+      require("codecompanion").toggle_chat()
+    end, { buffer = args.buf, silent = true, desc = "Hide Chat" })
+  end,
+})
 
 -- Diagnostics
 map("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
