@@ -106,6 +106,7 @@ setup("nvim-treesitter.configs", {
     "vim",
     "vimdoc",
     "vue",
+    "yaml",
   },
   highlight = { enable = true },
   indent = { enable = true },
@@ -364,8 +365,14 @@ end
 local codecompanion_ok, codecompanion = pcall(require, "codecompanion")
 if codecompanion_ok then
   codecompanion.setup({
+    prompt_library = {
+      markdown = {
+        dirs = { vim.fn.stdpath("config") .. "/codecompanion-prompts" },
+      },
+    },
     interactions = {
       chat = {
+        adapter = "codex",
         slash_commands = {
           ["image"] = {
             opts = {
@@ -374,12 +381,7 @@ if codecompanion_ok then
           },
         },
       },
-    },
-    strategies = {
-      chat = {
-        adapter = "codex",
-      },
-      inlkne = {
+      inline = {
         adapter = "codex",
       },
     },
