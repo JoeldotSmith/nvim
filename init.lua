@@ -63,6 +63,23 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
+    if vim.g.colors_name == "tron" then
+      vim.api.nvim_set_hl(0, "Normal",      { fg = "#b8fbff", bg = "#000000" })
+      vim.api.nvim_set_hl(0, "NormalNC",    { fg = "#86eaf0", bg = "#000000" })
+      vim.api.nvim_set_hl(0, "NormalFloat", { fg = "#b8fbff", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "SignColumn",  { bg = "#000000" })
+      vim.api.nvim_set_hl(0, "StatusLine",  { fg = "#00e5ff", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "TabLine",     { fg = "#2a5a60", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "TabLineFill", { fg = "#2a5a60", bg = "#000000" })
+      -- cmp window styling
+      vim.api.nvim_set_hl(0, "CmpNormal",    { fg = "#b8fbff", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "CmpBorder",    { fg = "#00e5ff", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "CmpSel",       { fg = "#7dffff", bg = "#001114", bold = true })
+      vim.api.nvim_set_hl(0, "CmpDocNormal", { fg = "#b8fbff", bg = "#000a0d" })
+      vim.api.nvim_set_hl(0, "CmpDocBorder", { fg = "#00e5ff", bg = "#000a0d" })
+      return
+    end
+
     vim.api.nvim_set_hl(0, "Normal",      { bg = "NONE" })
     vim.api.nvim_set_hl(0, "NormalNC",    { bg = "NONE" })
     vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })

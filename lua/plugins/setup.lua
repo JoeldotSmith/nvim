@@ -10,8 +10,8 @@ local function setup(module, opts)
   end
 end
 
-vim.cmd.colorscheme("carbonfox")
-vim.cmd("highlight! WinSeparator guifg=#4BC3B1")
+vim.cmd.colorscheme("tron")
+vim.cmd("highlight! WinSeparator guifg=#00e5ff")
 
 setup("mini.icons")
 setup("which-key")
@@ -21,7 +21,14 @@ setup("todo-comments")
 setup("flash")
 setup("trouble")
 setup("noice")
-setup("lualine")
+setup("lualine", {
+  options = {
+    theme = "tron",
+    globalstatus = true,
+    component_separators = { left = "|", right = "|" },
+    section_separators = { left = "", right = "" },
+  },
+})
 setup("bufferline")
 setup("persistence")
 setup("lazydev")
@@ -440,3 +447,10 @@ if codecompanion_ok then
     })
   end
 end
+require("codecompanion_orb").setup({
+  height_ratio = 0.4,
+  min_height = 8,
+  max_height = 18,
+  fps = 18,
+  detail = 2,
+})
