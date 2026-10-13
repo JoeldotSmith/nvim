@@ -6,18 +6,33 @@ local state = {
   opts = nil,
   attachments = {},
   intensity = 0,
+  mode = "idle",
+  requests = {},
 }
 
 local DEFAULTS = {
   auto_attach = true,
   commands = true,
+  codecompanion_events = true,
   height_ratio = 0.4,
   min_height = 8,
   max_height = 18,
   min_chat_height = 10,
   fps = 18,
   detail = 2,
+  animation_speed = 1,
   min_width = 12,
+  state_intensity = {
+    idle = 0,
+    thinking = 0.5,
+    responding = 1,
+  },
+}
+
+local VALID_STATES = {
+  idle = true,
+  thinking = true,
+  responding = true,
 }
 
 local function clamp(value, min_value, max_value)
@@ -36,6 +51,10 @@ end
 
 local function valid_buf(buf)
   return buf and vim.api.nvim_buf_is_valid(buf)
+end
+
+local function valid_state(mode)
+  return VALID_STATES[mode] and mode or "idle"
 end
 
 local function codecompanion_buf(buf)
@@ -151,9 +170,97 @@ local function schedule_attach(target, attempts)
   end)
 end
 
+local function request_key(data)
+  if type(data) == "table" then
+    if data.id ~= nil then
+      return tostring(data.id)
+    end
+    if data.bufnr ~= nil then
+      return "buf:" .. tostring(data.bufnr)
+    end
+  end
+
+  return "__global"
+end
+
+local function request_target(data)
+  if type(data) == "table" and valid_buf(data.bufnr) then
+    return { buf = data.bufnr }
+  end
+end
+
+local function active_request_mode()
+  local has_thinking = false
+
+  for _, mode in pairs(state.requests) do
+    if mode == "responding" then
+      return "responding"
+    end
+    if mode == "thinking" then
+      has_thinking = true
+    end
+  end
+
+  return has_thinking and "thinking" or "idle"
+end
+
+local function configured_intensity(mode)
+  local intensities = (state.opts and state.opts.state_intensity) or DEFAULTS.state_intensity
+  local intensity = intensities and intensities[mode]
+  if intensity == nil then
+    intensity = DEFAULTS.state_intensity[mode] or 0
+  end
+
+  return intensity
+end
+
+local function setup_codecompanion_events(group)
+  if not state.opts.codecompanion_events then
+    return
+  end
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "CodeCompanionRequestStarted",
+    callback = function(ev)
+      local data = ev.data or {}
+      state.requests[request_key(data)] = "thinking"
+      schedule_attach(request_target(data))
+      M.set_state(active_request_mode())
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "CodeCompanionRequestStreaming",
+    callback = function(ev)
+      local data = ev.data or {}
+      state.requests[request_key(data)] = "responding"
+      schedule_attach(request_target(data))
+      M.set_state(active_request_mode())
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "CodeCompanionRequestFinished",
+    callback = function(ev)
+      state.requests[request_key(ev.data or {})] = nil
+      M.set_state(active_request_mode())
+    end,
+  })
+end
+
 function M.setup(opts)
   state.opts = vim.tbl_deep_extend("force", DEFAULTS, opts or {})
   widget.setup_highlights(state.opts.highlights)
+  state.mode = "idle"
+  state.intensity = configured_intensity(state.mode)
+  state.requests = {}
+  for _, attachment in pairs(state.attachments) do
+    attachment.widget:set_mode(state.mode)
+    attachment.widget:set_intensity(state.intensity)
+  end
 
   local group = vim.api.nvim_create_augroup("CodeCompanionOrb", { clear = true })
 
@@ -174,6 +281,8 @@ function M.setup(opts)
     })
   end
 
+  setup_codecompanion_events(group)
+
   if state.opts.commands then
     pcall(vim.api.nvim_create_user_command, "CodeCompanionOrbAttach", function()
       M.attach()
@@ -185,6 +294,15 @@ function M.setup(opts)
       nargs = "?",
       complete = function()
         return { "0", "0.25", "0.5", "0.75", "1" }
+      end,
+    })
+
+    pcall(vim.api.nvim_create_user_command, "CodeCompanionOrbState", function(command)
+      M.set_state(valid_state(command.args))
+    end, {
+      nargs = "?",
+      complete = function()
+        return { "idle", "thinking", "responding" }
       end,
     })
   end
@@ -212,6 +330,7 @@ function M.attach(target, opts)
 
   local orb = widget.new(vim.tbl_deep_extend("force", orb_opts, {
     initial_intensity = state.intensity,
+    initial_mode = state.mode,
   }))
 
   if not orb:open_split(chat_win) then
@@ -235,6 +354,17 @@ function M.set_intensity(level)
   for _, attachment in pairs(state.attachments) do
     attachment.widget:set_intensity(state.intensity)
   end
+end
+
+function M.set_state(mode)
+  mode = valid_state(mode)
+  state.mode = mode
+
+  for _, attachment in pairs(state.attachments) do
+    attachment.widget:set_mode(mode)
+  end
+
+  M.set_intensity(configured_intensity(mode))
 end
 
 function M.chat(...)

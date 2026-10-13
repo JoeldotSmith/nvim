@@ -1,7 +1,7 @@
 vim.loader.enable()
 vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
 vim.g.snacks_animate = false
+vim.g.vimtex_compiler_method = 'latexrun'
 vim.g.vimtex_view_method = "zathura"
 local opt = vim.opt
 opt.autowrite = true

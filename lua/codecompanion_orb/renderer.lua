@@ -20,13 +20,24 @@ local DEFAULTS = {
   width = 36,
   height = 12,
   detail = 2,
+  animation_speed = 1,
   idle_amplitude = 0.07,
+  thinking_amplitude = 0.11,
   talking_amplitude = 0.18,
+  responding_amplitude = 0.22,
   idle_rotation_speed = 0.55,
+  thinking_rotation_speed = 0.86,
   talking_rotation_speed = 1.55,
+  responding_rotation_speed = 1.72,
   noise_scale = 1.85,
   noise_speed = 0.36,
+  thinking_noise_speed = 0.22,
+  responding_noise_speed = 0.64,
   noise_octaves = 3,
+  thinking_pulse_speed = 2.6,
+  thinking_sweep_speed = 1.45,
+  responding_pulse_speed = 5.4,
+  responding_shimmer_speed = 8.2,
   perspective = 2.65,
   camera_distance = 3.05,
   scale = 0.44,
@@ -50,6 +61,96 @@ end
 
 local function round(value)
   return math.floor(value + 0.5)
+end
+
+local function pulse(value)
+  return (math.sin(value) + 1) * 0.5
+end
+
+local function normalize_mode(mode)
+  if mode == "thinking" or mode == "responding" then
+    return mode
+  end
+
+  return "idle"
+end
+
+local function mode_params(opts, mode, time, intensity)
+  local responding_amplitude = opts.responding_amplitude or opts.talking_amplitude
+  local responding_rotation_speed = opts.responding_rotation_speed or opts.talking_rotation_speed
+
+  if mode == "thinking" then
+    local state_energy = math.max(intensity, 0.46)
+    local breath = pulse(time * opts.thinking_pulse_speed)
+
+    return {
+      amplitude = mix(opts.idle_amplitude, opts.thinking_amplitude, state_energy) + breath * 0.016,
+      rotation_speed = mix(opts.idle_rotation_speed, opts.thinking_rotation_speed, state_energy),
+      noise_speed = opts.thinking_noise_speed,
+      rotation_x = math.sin(time * 0.5) * 0.22 + 0.2 + breath * 0.07,
+      rotation_y_offset = math.sin(time * 1.7) * 0.08,
+      rotation_z = math.sin(time * 0.32) * 0.12,
+      scale = opts.scale * (1 + breath * 0.035),
+      energy = state_energy,
+    }
+  end
+
+  if mode == "responding" then
+    local state_energy = math.max(intensity, 0.78)
+    local surge = pulse(time * opts.responding_pulse_speed)
+
+    return {
+      amplitude = mix(opts.idle_amplitude, responding_amplitude, state_energy) + surge * 0.032,
+      rotation_speed = mix(opts.idle_rotation_speed, responding_rotation_speed, state_energy),
+      noise_speed = opts.responding_noise_speed,
+      rotation_x = math.sin(time * 0.9) * 0.36 + 0.2,
+      rotation_y_offset = math.sin(time * 2.4) * 0.16,
+      rotation_z = math.sin(time * 0.78) * 0.18,
+      scale = opts.scale * (1 + surge * 0.05),
+      energy = state_energy,
+    }
+  end
+
+  return {
+    amplitude = mix(opts.idle_amplitude, responding_amplitude, intensity),
+    rotation_speed = mix(opts.idle_rotation_speed, responding_rotation_speed, intensity),
+    noise_speed = opts.noise_speed,
+    rotation_x = math.sin(time * 0.63) * mix(0.22, 0.36, intensity) + 0.18,
+    rotation_y_offset = 0,
+    rotation_z = math.sin(time * 0.37) * mix(0.07, 0.15, intensity),
+    scale = opts.scale,
+    energy = intensity,
+  }
+end
+
+local function mode_radius_offset(opts, mode, time, vertex, energy)
+  if mode == "thinking" then
+    return math.sin(time * opts.thinking_pulse_speed + vertex.y * 5.5) * 0.018 * energy
+  end
+
+  if mode == "responding" then
+    return noise.fbm3(vertex.x * 3.1 - time * 1.6, vertex.y * 2.7 + time * 0.9, vertex.z * 3.3, 2) * 0.07 * energy
+  end
+
+  return 0
+end
+
+local function mode_visibility(opts, mode, time, edge_index, sub_height, a, b, base_visibility)
+  if mode == "thinking" then
+    local edge_y = (a.y + b.y) * 0.5
+    local sweep_center = (pulse(time * opts.thinking_sweep_speed) * 0.82 + 0.09) * sub_height
+    local distance = math.abs(edge_y - sweep_center) / math.max(1, sub_height * 0.22)
+    local boost = math.max(0, 1 - distance) * 0.58
+    return clamp(base_visibility + boost, 0, 1.35)
+  end
+
+  if mode == "responding" then
+    local depth = (a.depth + b.depth) * 0.5
+    local shimmer = pulse(time * opts.responding_shimmer_speed + edge_index * 0.37 + depth * 4.4)
+    return clamp(base_visibility * (0.72 + shimmer * 0.68), 0, 1.4)
+  end
+
+  return base_visibility
 end
 
 local function utf8_char(codepoint)
@@ -205,8 +306,9 @@ function Renderer:set_detail(detail)
   self.mesh = mesh.icosphere(detail)
 end
 
-function Renderer:render(time, intensity)
+function Renderer:render(time, intensity, mode)
   intensity = clamp(intensity or 0, 0, 1)
+  mode = normalize_mode(mode)
 
   local width = self.width
   local height = self.height
@@ -215,16 +317,16 @@ function Renderer:render(time, intensity)
   local depths = {}
   local projected = {}
   local opts = self.opts
+  time = time * math.max(0, opts.animation_speed or 1)
+  local params = mode_params(opts, mode, time, intensity)
 
-  local amplitude = mix(opts.idle_amplitude, opts.talking_amplitude, intensity)
-  local rotation_speed = mix(opts.idle_rotation_speed, opts.talking_rotation_speed, intensity)
-  local rotation_y = time * rotation_speed
-  local rotation_x = math.sin(time * 0.63) * mix(0.22, 0.36, intensity) + 0.18
-  local rotation_z = math.sin(time * 0.37) * mix(0.07, 0.15, intensity)
-  local scale = math.min(sub_width, sub_height) * opts.scale
+  local rotation_y = time * params.rotation_speed + params.rotation_y_offset
+  local rotation_x = params.rotation_x
+  local rotation_z = params.rotation_z
+  local scale = math.min(sub_width, sub_height) * params.scale
   local center_x = sub_width * 0.5 + 0.5
   local center_y = sub_height * 0.5 + 0.5
-  local noise_time = time * opts.noise_speed
+  local noise_time = time * params.noise_speed
 
   for index, vertex in ipairs(self.mesh.vertices) do
     local displacement = noise.fbm3(
@@ -234,7 +336,7 @@ function Renderer:render(time, intensity)
       opts.noise_octaves
     )
 
-    local radius = 1 + displacement * amplitude
+    local radius = 1 + displacement * params.amplitude + mode_radius_offset(opts, mode, time, vertex, params.energy)
     local displaced = {
       x = vertex.x * radius,
       y = vertex.y * radius,
@@ -258,11 +360,12 @@ function Renderer:render(time, intensity)
     }
   end
 
-  for _, edge in ipairs(self.mesh.edges) do
+  for edge_index, edge in ipairs(self.mesh.edges) do
     local a = projected[edge[1]]
     local b = projected[edge[2]]
     local average_depth = (a.depth + b.depth) * 0.5
     local visibility = mix(opts.back_edge_opacity, 1, clamp((average_depth + 1.35) / 2.7, 0, 1))
+    visibility = mode_visibility(opts, mode, time, edge_index, sub_height, a, b, visibility)
     rasterize_line(depths, sub_width, sub_height, a, b, visibility)
   end
 

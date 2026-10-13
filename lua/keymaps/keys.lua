@@ -190,6 +190,9 @@ end, { desc = "AI Helper" })
 map("n", "<leader>aA", function()
   require("codecompanion").chat()
 end, { desc = "AI Helper (new chat)" })
+map("n", "<leader>fa", function()
+  require("codecompanion_buffer_picker").pick()
+end, { desc = "Add Buffers to AI Chat" })
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "codecompanion",
   callback = function(args)
@@ -242,4 +245,3 @@ vim.api.nvim_create_autocmd("LspAttach", {
     lspmap("<leader>ca", vim.lsp.buf.code_action, "Code Action")
   end,
 })
-

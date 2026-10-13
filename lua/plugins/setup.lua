@@ -408,7 +408,7 @@ if codecompanion_ok then
         codex = function()
           return require("codecompanion.adapters").extend("codex", {
             defaults = {
-              auth_method = "chatgpt",
+              auth_method = "chat-gpt",
             },
           })
         end,
@@ -453,4 +453,5 @@ require("codecompanion_orb").setup({
   max_height = 18,
   fps = 18,
   detail = 2,
+  animation_speed = 0.3,
 })

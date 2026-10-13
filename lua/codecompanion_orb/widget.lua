@@ -11,7 +11,9 @@ local DEFAULTS = {
   height = 12,
   fps = 18,
   detail = 2,
+  animation_speed = 1,
   initial_intensity = 0,
+  initial_mode = "idle",
   min_width = 12,
   highlights = {
     normal = { fg = "#44e4f2", bg = "NONE" },
@@ -61,6 +63,7 @@ function Widget.new(opts)
   self.fps = opts.fps
   self.intensity = opts.initial_intensity
   self.target_intensity = opts.initial_intensity
+  self.mode = opts.initial_mode
   self.started_at = uv.hrtime() / 1e9
   self.last_lines = nil
   self.closed = false
@@ -68,13 +71,24 @@ function Widget.new(opts)
     width = opts.width or 36,
     height = opts.height,
     detail = opts.detail,
+    animation_speed = opts.animation_speed,
     idle_amplitude = opts.idle_amplitude,
+    thinking_amplitude = opts.thinking_amplitude,
     talking_amplitude = opts.talking_amplitude,
+    responding_amplitude = opts.responding_amplitude,
     idle_rotation_speed = opts.idle_rotation_speed,
+    thinking_rotation_speed = opts.thinking_rotation_speed,
     talking_rotation_speed = opts.talking_rotation_speed,
+    responding_rotation_speed = opts.responding_rotation_speed,
     noise_scale = opts.noise_scale,
     noise_speed = opts.noise_speed,
+    thinking_noise_speed = opts.thinking_noise_speed,
+    responding_noise_speed = opts.responding_noise_speed,
     noise_octaves = opts.noise_octaves,
+    thinking_pulse_speed = opts.thinking_pulse_speed,
+    thinking_sweep_speed = opts.thinking_sweep_speed,
+    responding_pulse_speed = opts.responding_pulse_speed,
+    responding_shimmer_speed = opts.responding_shimmer_speed,
     perspective = opts.perspective,
     camera_distance = opts.camera_distance,
     scale = opts.scale,
@@ -142,6 +156,10 @@ function Widget:set_intensity(level)
   self.target_intensity = math.max(0, math.min(1, level or 0))
 end
 
+function Widget:set_mode(mode)
+  self.mode = mode or "idle"
+end
+
 function Widget:render_once()
   if self.closed or not valid_win(self.win) or not valid_buf(self.buf) then
     self:stop()
@@ -153,7 +171,7 @@ function Widget:render_once()
   self.intensity = self.intensity + (self.target_intensity - self.intensity) * 0.12
 
   local now = uv.hrtime() / 1e9
-  local frame = self.renderer:render(now - self.started_at, self.intensity)
+  local frame = self.renderer:render(now - self.started_at, self.intensity, self.mode)
 
   set_buf_option(self.buf, "modifiable", true)
 
